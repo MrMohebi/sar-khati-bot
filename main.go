@@ -5,5 +5,5 @@ import "github.com/MrMohebi/sar-khati-bot/configs"
 func main() {
 	configs.Setup()
 
-	println("lets start :)")
+	println("Mofid test")
 }
