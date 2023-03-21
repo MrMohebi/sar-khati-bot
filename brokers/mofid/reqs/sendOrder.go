@@ -3,6 +3,7 @@ package mofid
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"github.com/MrMohebi/sar-khati-bot/brokers/mofid"
 	mofidTypes "github.com/MrMohebi/sar-khati-bot/brokers/mofid/types"
 	"github.com/MrMohebi/sar-khati-bot/common"
@@ -10,7 +11,7 @@ import (
 	"net/http"
 )
 
-func SendOrder(authToken string) mofidTypes.SendOrderRes {
+func SendOrder(authToken string) (mofidTypes.SendOrderRes, error) {
 	data := mofidTypes.OrderReq{
 		IsSymbolCautionAgreement:  false,
 		CautionAgreementSelected:  false,
@@ -31,12 +32,12 @@ func SendOrder(authToken string) mofidTypes.SendOrderRes {
 	}
 
 	dataJSON, err := json.Marshal(data)
-	common.IsErr(err)
+	common.IsErr(err, false)
 
 	client := &http.Client{}
 
 	req, err := http.NewRequest("POST", mofid.SendOrderURL, bytes.NewBuffer(dataJSON))
-	common.IsErr(err)
+	common.IsErr(err, false)
 
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7")
@@ -53,19 +54,25 @@ func SendOrder(authToken string) mofidTypes.SendOrderRes {
 	req.Header.Set("sec-ch-ua-mobile", "?0")
 	req.Header.Set("sec-ch-ua-platform", `"Windows"`)
 	resp, err := client.Do(req)
-	common.IsErr(err)
+	common.IsErr(err, false)
 
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
-		common.IsErr(err)
+		common.IsErr(err, false)
 	}(resp.Body)
 
 	bodyText, err := io.ReadAll(resp.Body)
-	common.IsErr(err)
+	common.IsErr(err, false)
 
 	var res mofidTypes.SendOrderRes
-	err = json.Unmarshal(bodyText, &res)
-	common.IsErr(err)
+	var errorResponse error
 
-	return res
+	if resp.StatusCode == http.StatusOK {
+		err = json.Unmarshal(bodyText, &res)
+		common.IsErr(err, false)
+	} else if resp.StatusCode == http.StatusUnauthorized {
+		errorResponse = errors.New("unauthorized")
+	}
+
+	return res, errorResponse
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/MrMohebi/sar-khati-bot/brokers/mofid/reqs"
+	"github.com/MrMohebi/sar-khati-bot/common"
 	"github.com/MrMohebi/sar-khati-bot/configs"
 )
 
@@ -13,8 +14,11 @@ func main() {
 
 	mofidAuthToken := configs.IniGet("broker_mofid", "authToken")
 
-	res := mofid.SendOrder(mofidAuthToken)
+	res, err := mofid.SendOrder(mofidAuthToken)
+	common.IsErr(err, false)
 
-	println(res.MessageDesc)
+	if err == nil {
+		println(res.MessageDesc)
+	}
 
 }
