@@ -12,13 +12,13 @@ func main() {
 	configs.Setup()
 	println("Mofid test")
 
-	mofidAuthToken := configs.IniGet("broker_mofid", "authToken")
+	//mofidAuthToken := configs.IniGet("broker_mofid", "authToken")
 
-	res, err := mofid.SendOrder(mofidAuthToken)
+	res, err := mofid.SearchSymbol()
 	common.IsErr(err, false)
 
 	if err == nil {
-		println(res.MessageDesc)
+		println(res[0].Isin)
 	}
 
 }

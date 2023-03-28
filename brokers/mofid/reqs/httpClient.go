@@ -2,14 +2,21 @@ package mofid
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/MrMohebi/sar-khati-bot/common"
 	"github.com/MrMohebi/sar-khati-bot/configs"
 	"net/http"
+	"net/url"
 )
 
-func PostHttp(url string, dataJSON []byte) *http.Request {
+type QueryParams struct {
+	Key   string
+	Value string
+}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(dataJSON))
+func PostHttp(postUrl string, dataJSON []byte) *http.Request {
+
+	req, err := http.NewRequest("POST", postUrl, bytes.NewBuffer(dataJSON))
 	common.IsErr(err, false)
 
 	req.Header.Set("Accept", "*/*")
@@ -30,8 +37,24 @@ func PostHttp(url string, dataJSON []byte) *http.Request {
 	return req
 }
 
-func GetHttp(url string, symbol string) *http.Request {
-	req, err := http.NewRequest("GET", url, nil)
+func GetHttp(getUrl string, params []QueryParams) *http.Request {
+
+	if len(params) > 0 {
+		for _, param := range params {
+			if len(params) == 1 {
+				getUrl += "?" + param.Key + "=" + param.Value
+			} else if len(params) > 1 {
+				getUrl += "&" + param.Key + "=" + param.Value
+			}
+		}
+		u, _ := url.ParseRequestURI(getUrl)
+		u.RawQuery = u.Query().Encode()
+		urlStr := fmt.Sprintf("%v", u)
+		getUrl = urlStr
+		println(getUrl)
+	}
+
+	req, err := http.NewRequest("GET", getUrl, nil)
 	common.IsErr(err, false)
 
 	req.Header.Set("Accept", "*/*")

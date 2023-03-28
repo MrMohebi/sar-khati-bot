@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func SendOrder(authToken string) (mofidTypes.SendOrderRes, error) {
+func SendOrder() (mofidTypes.SendOrderRes, error) {
 	data := mofidTypes.OrderReq{
 		IsSymbolCautionAgreement:  false,
 		CautionAgreementSelected:  false,
